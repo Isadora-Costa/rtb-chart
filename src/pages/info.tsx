@@ -1,5 +1,5 @@
 import { Center, Box, Grid, TableContainer } from "@chakra-ui/react";
-import { CardVariant } from "../components/Data/CardVariant";
+import { CardVariant } from "../components/Body/CardVariant";
 import { HeaderBody } from "../components/Header/HeaderBody";
 
 

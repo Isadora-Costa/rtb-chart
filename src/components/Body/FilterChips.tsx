@@ -1,6 +1,22 @@
 import { Select, Stack } from "@chakra-ui/react";
+import { useState } from "react";
 
-export function FilterChips() {
+type SellerSelect = {
+  value: string;
+}
+
+type CountrySelect = {
+  value: string;
+}
+
+interface SelectProps {
+  sellers: SellerSelect[],
+  countries: CountrySelect[]
+}
+
+export function FilterChips({ sellers, countries }: SelectProps) {
+  // const [ state, setState ] = useState()
+
   return (
     <Stack direction='row' spacing={8}>
       <Select
@@ -11,10 +27,7 @@ export function FilterChips() {
         color='gray.300'
         border='2px'
       >
-        <option value='all_sellers'>All sellers</option>
-        <option value='seller1'>Seller 01</option>
-        <option value='seller2'>Seller 02</option>
-        <option value='seller3'>Seller 03</option>
+        { sellers.map(({ value }) => <option value={value} >{value}</option>) }
       </Select>
 
       <Select
@@ -25,11 +38,12 @@ export function FilterChips() {
         color='gray.300'
         border='2px'
       >
-        <option value='all_sellers'>All countries</option>
-        <option value='seller1'>ARG</option>
-        <option value='seller2'>BRA</option>
-        <option value='seller3'>SPA</option>
+        { countries.map(({ value }) => <option value={value} >{value}</option>) }
       </Select>
     </Stack>
   )
+}
+
+
+export async function renewSeletcs(): Promise<void> {
 }

@@ -26,7 +26,7 @@ export function Chart({ rows }: ChartProps) {
       </Thead>
       <Tbody>
         {rows.map(row => (
-          <Tr>
+          <Tr key={row.orderId} >
             <Td color='red.300'>{row.orderId}</Td>
             <Td color='gray.300'>{row.product}</Td>
             <Td color='gray.300'>{row.price}</Td>
