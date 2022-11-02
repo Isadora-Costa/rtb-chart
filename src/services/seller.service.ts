@@ -71,10 +71,7 @@ class sellerService {
       }
     }
 
-    console.log("URL");
-    console.log(url);
     const orders = await axios.get(url).then((res) => res.data)
-    console.log("ORDERS", orders.data);
     if (orders.data) {
       for (const order of orders.data) {
         queryPages.records.push({
