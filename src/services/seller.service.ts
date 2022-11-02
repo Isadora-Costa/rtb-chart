@@ -47,17 +47,30 @@ class sellerService {
       meta: null
     }
 
-    if (filter) {
-      queryPages.records = sellerService.getFiltered(queryPages.records, filter)
-    }
-
     if (afterCursor) {
       url = url + '?after=' + afterCursor
     }
-
+    
     if (beforeCursor) {
       url = url + '?before=' + beforeCursor
     }
+
+    if (filter?.seller) {
+      if (afterCursor || beforeCursor) {
+        url = url + '&seller=' + filter.seller
+      } else {
+        url = url + '?seller=' + filter.seller
+      }
+    }
+
+    if (filter?.country) {
+      if (afterCursor || beforeCursor || filter?.seller) {
+        url = url + '&country=' + filter.country
+      } else {
+        url = url + '?country=' + filter.country
+      }
+    }
+
     console.log("URL");
     console.log(url);
     const orders = await axios.get(url).then((res) => res.data)
@@ -70,7 +83,7 @@ class sellerService {
           price: order.price,
           seller: order.sellerName,
           country: order.countryName,
-        })     
+        })
       }
     }
 
@@ -79,56 +92,53 @@ class sellerService {
   }
 
   static async getSellers(): Promise<ItopSellerDTO[]> {
-    let url: string = 'http://localhost:3333/seller';
-    const sellers = await axios.get(url).then((res) => res.data)
-    console.log(sellers);
+    let url: string = 'http://localhost:3333/seller/top-seller';
+    const topSellers = await axios.get(url).then((res) => res.data)
 
-
-    if (sellers) {
-      for (const seller of sellers) {
-        console.log(seller);
+    if (topSellers) {
+      for (const seller of topSellers) {
         sellerService.topSellerDto.push({
           name: seller.name,
           value: seller.totalSeller
-        })     
+        })
       }
     }
-    console.log(sellerService.topSellerDto);
 
     return sellerService.topSellerDto
   }
 
   static async getSellectSeller(): Promise<IselectDTO[]> {
-    const seller: IselectDTO[] = [
-      { value: 'Seller 01', id: '1' },
-      { value: 'Seller 02', id: '2'},
-      { value: 'Seller 03', id: '3' }
-    ]
-    return seller
+    let url: string = 'http://localhost:3333/seller';
+    const sellers: IselectDTO[] = []
+    const selectedSellers = await axios.get(url).then((res) => res.data)
+
+    if (selectedSellers) {
+      for (const seller of selectedSellers) {
+        sellers.push({
+          value: seller.name,
+          id: seller.id
+        })
+      }
+    }
+
+    return sellers
   }
 
   static async getSellectCountries(): Promise<IselectDTO[]> {
-    const countries: IselectDTO[] = [
-      { value: 'ARG', id: 'ARG' },
-      { value: 'MEX', id: 'MEX' },
-      { value: 'SPA', id: 'SPA' }
-    ]
-    return countries
-  }
+    let url: string = 'http://localhost:3333/country';
+    const countries: IselectDTO[] = []
+    const selectedCountries = await axios.get(url).then((res) => res.data)
 
-  private static getFiltered(items: IrecordDTO[], filter: IFilter): IrecordDTO[] {
-    let fileredRecords: IrecordDTO[] = []
-
-    if (filter.country && filter.seller) {
-      fileredRecords = items.filter(item => item.seller === filter.seller && item.country === filter.country)
-    } else if (filter.country) {
-      fileredRecords = items.filter(item => item.country === filter.country)
-    } else if (filter.seller) {
-      fileredRecords = items.filter(item => item.seller === filter.seller)
-    } else {
-      return items
+    if (selectedCountries) {
+      for (const country of selectedCountries) {
+        countries.push({
+          value: country.name,
+          id: country.id
+        })
+      }
     }
-    return fileredRecords
+
+    return countries
   }
 }
 

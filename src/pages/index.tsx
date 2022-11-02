@@ -33,7 +33,6 @@ export default function Home({ dataGrid, sellers, selectSellers, selectCountries
     }
     setselectedSeller(event.target.value);
     setgridData(await sellerService.getPage(null, null, { seller: event.target.value }))
-    setselectedCountry(event.target.value);
   };
 
   const handleChangeCountry = async (event: { target: { value: string; }; }) => {
@@ -96,7 +95,6 @@ export default function Home({ dataGrid, sellers, selectSellers, selectCountries
               fontWeight='semibold'
               color='gray.300'
               border='2px'
-              onClick={async () => { setgridData(await getPage('', gridData.meta)) }}
               onChange={handleChangeCountry}
             >
               {selectCountries.map(({ value, id }) => <option key={value} value={id} >{value}</option>)}
@@ -120,7 +118,12 @@ export default function Home({ dataGrid, sellers, selectSellers, selectCountries
               mb={8}
               aria-label='Previeous Page'
               variant='outline'
-              onClick={async () => { setgridData(await getPage('previousPage', gridData.meta)) }}
+              onClick={async () => {
+                setgridData(await getPage('previousPage', gridData.meta, selectedSeller || selectedCountry ? {
+                  seller: selectedSeller ? selectedSeller : null,
+                  country: selectedCountry ? selectedCountry : null
+                } : null))
+              }}
               borderColor='gray.100'
               borderRadius='2rem'
               border='2px'
@@ -132,7 +135,12 @@ export default function Home({ dataGrid, sellers, selectSellers, selectCountries
               w='65px'
               h='35px'
               mb={8}
-              onClick={async () => { setgridData(await getPage('nextPage', gridData.meta)) }}
+              onClick={async () => {
+                setgridData(await getPage('nextPage', gridData.meta, selectedSeller || selectedCountry ? {
+                  seller: selectedSeller ? selectedSeller : null,
+                  country: selectedCountry ? selectedCountry : null
+                } : null))
+              }}
               aria-label='Next Page'
               variant='outline'
               borderColor='gray.100'
@@ -149,7 +157,7 @@ export default function Home({ dataGrid, sellers, selectSellers, selectCountries
   )
 }
 
-export async function getPage(page: string, meta: any) {
+export async function getPage(page: string, meta: any, filters?: { seller?: string, country?: string }) {
   let dataGrid = {
     records: [],
     meta: {}
@@ -158,12 +166,58 @@ export async function getPage(page: string, meta: any) {
   switch (page) {
     case 'previousPage':
       if (meta.beforeCursor) {
+
+        if (filters?.country) {
+          dataGrid = await sellerService.getPage(null, meta.beforeCursor, {
+            country: filters.country
+          })
+          break;
+        }
+
+        if (filters?.seller) {
+          dataGrid = await sellerService.getPage(null, meta.beforeCursor, {
+            seller: filters.seller
+          })
+          break;
+        }
+
+        if (filters?.country && filters?.seller) {
+          dataGrid = await sellerService.getPage(null, meta.beforeCursor, {
+            seller: filters.seller,
+            country: filters.country
+          })
+          break;
+        }
+
         dataGrid = await sellerService.getPage(null, meta.beforeCursor)
       }
       break;
 
     case 'nextPage':
       if (meta.afterCursor) {
+
+        if (filters?.country) {
+          dataGrid = await sellerService.getPage(meta.afterCursor, null, {
+            country: filters.country
+          })
+          break;
+        }
+
+        if (filters?.seller) {
+          dataGrid = await sellerService.getPage(meta.afterCursor, null, {
+            seller: filters.seller
+          })
+          break;
+        }
+
+        if (filters?.country && filters?.seller) {
+          dataGrid = await sellerService.getPage(meta.afterCursor, null, {
+            seller: filters.seller,
+            country: filters.country
+          })
+          break;
+        }
+
         dataGrid = await sellerService.getPage(meta.afterCursor, null)
       }
       break;
