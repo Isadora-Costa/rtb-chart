@@ -1,4 +1,4 @@
-import { GridItem, Container, Flex, Box, Img } from "@chakra-ui/react";
+import { GridItem, Container, Flex, Box, Img, useBreakpointValue } from "@chakra-ui/react";
 
 interface CardProps {
   name: string;

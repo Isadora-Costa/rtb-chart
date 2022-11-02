@@ -6,21 +6,45 @@ import {
   Flex,
   TableContainer,
   IconButton,
+  Select,
+  Show,
+  Hide
 } from '@chakra-ui/react'
 import { Card } from '../components/Body/Card';
 import { ArrowLeft, ArrowRight } from 'phosphor-react'
 import { HeaderBody } from '../components/Header/HeaderBody';
 import { Chart } from '../components/Body/Chart';
-import { FilterChips } from '../components/Body/FilterChips';
-import { GetServerSideProps } from 'next';
+import { GetStaticProps } from 'next';
 import { sellerService } from '../services/seller.service';
 import { useState } from 'react';
 
-export default function Home({dataGrid, sellers, selectSellers, selectCountries}) {
+export default function Home({ dataGrid, sellers, selectSellers, selectCountries }) {
   let [gridData, setgridData] = useState({
     records: dataGrid.records,
     meta: dataGrid.meta
   });
+
+  const [selectedSeller, setselectedSeller] = useState("")
+  const [selectedCountry, setselectedCountry] = useState("")
+
+  const handleChangeSeller = async (event: { target: { value: string; }; }) => {
+    if (selectedCountry) {
+      setselectedCountry("")
+    }
+    setselectedSeller(event.target.value);
+    setgridData(await sellerService.getPage(null, null, { seller: event.target.value }))
+    setselectedCountry(event.target.value);
+  };
+
+  const handleChangeCountry = async (event: { target: { value: string; }; }) => {
+    setselectedCountry(event.target.value);
+
+    if (!selectedSeller) {
+      setgridData(await sellerService.getPage(null, null, { country: event.target.value }))
+    } else {
+      setgridData(await sellerService.getPage(null, null, { seller: selectedSeller, country: event.target.value }))
+    }
+  };
 
   return (
     <>
@@ -28,19 +52,56 @@ export default function Home({dataGrid, sellers, selectSellers, selectCountries}
 
       <Center>
         <Box w='80rem' ml={10} mr={10} mt={-20}>
-          <Grid templateColumns='repeat(3, 1fr)' gap={8}>
-            <Card name={sellers[0].name} value={sellers[0].value} />
+          <Hide below='md'>
+            <Grid templateColumns='repeat(3, 1fr)' gap={8}>
+              <Card name={sellers[0].name} value={sellers[0].value} />
 
-            <Card name={sellers[1].name} value={sellers[1].value} />
+              <Card name={sellers[1].name} value={sellers[1].value} />
 
-            <Card name={sellers[2].name} value={sellers[2].value} />
-          </Grid>
+              <Card name={sellers[2].name} value={sellers[2].value} />
+            </Grid>
+          </Hide>
+          <Show below='md'>
+            <Grid templateRows='repeat(3, 1fr)' gap={8}>
+              <Card name={sellers[0].name} value={sellers[0].value} />
+
+              <Card name={sellers[1].name} value={sellers[1].value} />
+
+              <Card name={sellers[2].name} value={sellers[2].value} />
+            </Grid>
+          </Show>
         </Box>
       </Center>
 
       <Center>
         <Flex w='80rem' justify='right' mt={8}>
-          <FilterChips sellers={selectSellers} countries={selectCountries}/>
+          <Stack direction='row' spacing={8}>
+            <Select
+              placeholder='Select option'
+              borderColor='gray.100'
+              focusBorderColor='black'
+              fontWeight='semibold'
+              color='gray.300'
+              border='2px'
+              onChange={handleChangeSeller}
+            >
+              {selectSellers.map(({ value, id }) => <option key={value} value={id} >{value}</option>)}
+            </Select>
+
+            <Select
+              placeholder='Select option'
+              value={selectedCountry}
+              borderColor='gray.100'
+              focusBorderColor='black'
+              fontWeight='semibold'
+              color='gray.300'
+              border='2px'
+              onClick={async () => { setgridData(await getPage('', gridData.meta)) }}
+              onChange={handleChangeCountry}
+            >
+              {selectCountries.map(({ value, id }) => <option key={value} value={id} >{value}</option>)}
+            </Select>
+          </Stack>
         </Flex>
       </Center>
 
@@ -50,9 +111,7 @@ export default function Home({dataGrid, sellers, selectSellers, selectCountries}
         </TableContainer>
       </Center>
 
-
       <Center>
-
         <Flex w='80rem' justify='right' mt={8}>
           <Stack direction='row' spacing={4}>
             <IconButton
@@ -65,7 +124,7 @@ export default function Home({dataGrid, sellers, selectSellers, selectCountries}
               borderColor='gray.100'
               borderRadius='2rem'
               border='2px'
-              isDisabled={gridData.meta.previous === 0 ? true : false}
+              isDisabled={!gridData.meta.beforeCursor ? true : false}
               _hover={{ bg: 'white', borderColor: 'red.300' }}
               icon={<ArrowLeft />}
             />
@@ -79,7 +138,7 @@ export default function Home({dataGrid, sellers, selectSellers, selectCountries}
               borderColor='gray.100'
               borderRadius='2rem'
               border='2px'
-              isDisabled={gridData.meta.next === 0 ? true : false}
+              isDisabled={!gridData.meta.afterCursor ? true : false}
               _hover={{ bg: 'white', borderColor: 'red.300' }}
               icon={<ArrowRight />}
             />
@@ -98,22 +157,26 @@ export async function getPage(page: string, meta: any) {
 
   switch (page) {
     case 'previousPage':
-      dataGrid = await sellerService.getPage(meta.previous as number)
+      if (meta.beforeCursor) {
+        dataGrid = await sellerService.getPage(null, meta.beforeCursor)
+      }
       break;
 
     case 'nextPage':
-      dataGrid = await sellerService.getPage(meta.next as number)
+      if (meta.afterCursor) {
+        dataGrid = await sellerService.getPage(meta.afterCursor, null)
+      }
       break;
 
     default:
-      dataGrid = await sellerService.getPage(1);
+      dataGrid = await sellerService.getPage();
   }
 
   return dataGrid
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
-  const dataGrid = await sellerService.getPage(1)
+export const getStaticProps: GetStaticProps = async () => {
+  const dataGrid = await sellerService.getPage()
   const sellers = await sellerService.getSellers()
   const selectCountries = await sellerService.getSellectCountries()
   const selectSellers = await sellerService.getSellectSeller()

@@ -1,11 +1,11 @@
-import { GridItem, Container, Flex, Box, Img } from "@chakra-ui/react";
+import { GridItem, Container, Flex, Box, Link } from "@chakra-ui/react";
 
 interface CardProps {
   name: string;
   value: string;
 }
 
-export function CardVariant({name, value, ...rest}: CardProps) {
+export function CardVariant({ name, value }: CardProps) {
   return (
     <GridItem
       w='100%'
@@ -25,7 +25,9 @@ export function CardVariant({name, value, ...rest}: CardProps) {
             ml={6}
             color='red.300'
           >
-            {name}
+            <Link href='https://github.com/Isadora-Costa' isExternal>
+              {name}
+            </Link>
           </Box>
         </Flex>
 
@@ -35,8 +37,11 @@ export function CardVariant({name, value, ...rest}: CardProps) {
           lineHeight='9'
           mt={10}
           ml={6}
+          mr={8}
         >
-          {value}
+          <Link href='https://www.linkedin.com/in/isadora-costa-97354a244/' isExternal>
+            {value}
+          </Link>
         </Box>
       </Container>
     </GridItem>
